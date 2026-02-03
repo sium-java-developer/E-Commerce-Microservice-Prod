@@ -3,6 +3,19 @@ databases:
     plan: free
     ipAllowList: [] # Allows internal access from all your Render services
 
+envVarGroups:
+  - name: kafka-aiven-config-shared
+    envVars:
+      - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
+        value: SASL_SSL
+      - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
+        value: SCRAM-SHA-256
+      # Aiven SSL Truststore Configuration
+      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
+        value: /app/truststore.jks
+      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
+        value: changeit
+
 services:
   # Backend Service
   - type: web
@@ -13,20 +26,11 @@ services:
     dockerContext: .
     #healthCheckPath: /actuator/health # Assuming you have actuator, otherwise remove
     envVars:
-      # Kafka Configuration
+      - fromGroup: kafka-aiven-config-shared
       - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
         fromSecret: true
       - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
         fromSecret: true
-      - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
-        value: SASL_SSL
-      - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
-        value: SCRAM-SHA-256
-      # Aiven SSL Truststore Configuration
-      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
-        value: /app/truststore.jks
-      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
-        value: changeit
       # Database Connection
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
@@ -52,20 +56,11 @@ services:
     dockerfilePath: ./web.Dockerfile
     dockerContext: .
     envVars:
-      # Kafka Configuration
+      - fromGroup: kafka-aiven-config-shared
       - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
         fromSecret: true
       - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
         fromSecret: true
-      - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
-        value: SASL_SSL
-      - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
-        value: SCRAM-SHA-256
-      # Aiven SSL Truststore Configuration
-      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
-        value: /app/truststore.jks
-      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
-        value: changeit
       - key: SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_INFO_HEADERS
         value: "false"
       # Point Frontend to Backend URL
