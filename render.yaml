@@ -6,10 +6,6 @@ databases:
 envVarGroups:
   - name: kafka-aiven-config
     envVars:
-      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
-        fromSecret: true
-      - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
-        fromSecret: true
       - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
         value: SASL_SSL
       - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
@@ -30,7 +26,12 @@ services:
     dockerContext: .
     #healthCheckPath: /actuator/health # Assuming you have actuator, otherwise remove
     envVars:
-      - fromGroup: kafka-aiven-config # Inherit all shared Kafka variables
+      - fromGroup: kafka-aiven-config # Inherit shared Kafka variables
+      # Kafka Secrets (defined per-service)
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        fromSecret: true
+      - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+        fromSecret: true
       # Database Connection
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
@@ -56,7 +57,12 @@ services:
     dockerfilePath: ./web.Dockerfile
     dockerContext: .
     envVars:
-      - fromGroup: kafka-aiven-config # Inherit all shared Kafka variables
+      - fromGroup: kafka-aiven-config # Inherit shared Kafka variables
+      # Kafka Secrets (defined per-service)
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        fromSecret: true
+      - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+        fromSecret: true
       - key: SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_INFO_HEADERS
         value: "false"
       # Point Frontend to Backend URL
