@@ -1,13 +1,10 @@
-services:
-  # 1. Managed PostgreSQL (Free Tier)
-  - type: pserv
-    name: product-db
+databases:
+  - name: product-db
     plan: free
-    postgres:
-      version: 15
-    ipAllowList: [] # Allows internal access from your services
+    ipAllowList: [] # Allows internal access from all your Render services
 
-  # 2. Backend Service
+services:
+  # Backend Service
   - type: web
     name: product-server
     plan: free
