@@ -1,0 +1,90 @@
+services:
+
+  zookeeper-v14:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper-container-v14
+    ports:
+      - '2191:2181'
+    networks:
+      - microservice-net-v14
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka-v14:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-container-v14
+    ports:
+      - '9100:9092'
+    networks:
+      - microservice-net-v14
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-v14:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-v14:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper-v14
+
+  postgres-v14:
+    image: "postgres:15.3-alpine3.18"
+    container_name: postgres-container-v14
+    volumes:
+      - product-data-v14:/var/lib/postgresql/data
+    ports:
+      - 5446:5432
+    environment:
+      - POSTGRES_DB=productdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    networks:
+      - microservice-net-v14
+
+  backend-v14:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    image: ecom/product-server:v14
+    container_name: backend-container-v14
+    ports:
+      - "8098:8081"
+    depends_on:
+      - "postgres-v14"
+      - "kafka-v14"
+    environment:
+      - DB_SERVER=postgres-v14:5432
+      - POSTGRES_DB=productdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-v14:9092
+      - SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER=org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      - SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_DESERIALIZER_VALUE_DELEGATE_CLASS=org.springframework.kafka.support.serializer.JsonDeserializer
+      - SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES=*
+      - SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_USE_TYPE_HEADERS=false
+      - SPRING_JSON_USE_TYPE_HEADERS=false
+    networks:
+      - microservice-net-v14
+
+  frontend-v14:
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+    image: ecom/product-web:v14
+    container_name: frontend-container-v14
+    depends_on:
+      - "backend-v14"
+      - "kafka-v14"
+    ports:
+      - "8099:8080"
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-v14:9092
+      - SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_INFO_HEADERS=false
+    networks:
+      - microservice-net-v14
+
+volumes:
+  product-data-v14:
+
+networks:
+  microservice-net-v14:
+    driver: bridge

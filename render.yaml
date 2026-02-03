@@ -1,0 +1,79 @@
+services:
+  # 1. Managed PostgreSQL (Free Tier)
+  - type: pserv
+    name: product-db
+    plan: free
+    postgres:
+      version: 15
+    ipAllowList: [] # Allows internal access from your services
+
+  # 2. Backend Service
+  - type: web
+    name: product-server
+    plan: free
+    env: docker
+    dockerfilePath: ./server.Dockerfile
+    dockerContext: .
+    #healthCheckPath: /actuator/health # Assuming you have actuator, otherwise remove
+    envVars:
+      # Database Connection
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: product-db
+          property: connectionString
+      # Kafka Configuration
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        fromSecret: true
+      - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+        fromSecret: true
+      - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
+        value: SASL_SSL
+      - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
+        value: SCRAM-SHA-256
+      # Aiven SSL Truststore Configuration
+      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
+        value: /app/truststore.jks
+      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
+        value: changeit
+      # CRITICAL FIXES for Serialization/Deserialization
+      - key: SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER
+        value: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      - key: SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_DESERIALIZER_VALUE_DELEGATE_CLASS
+        value: org.springframework.kafka.support.serializer.JsonDeserializer
+      - key: SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES
+        value: "*"
+      - key: SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_USE_TYPE_HEADERS
+        value: "false"
+      - key: SPRING_JSON_USE_TYPE_HEADERS
+        value: "false"
+
+  # 3. Frontend Service
+  - type: web
+    name: product-web
+    plan: free
+    env: docker
+    dockerfilePath: ./web.Dockerfile
+    dockerContext: .
+    envVars:
+      # Kafka Configuration
+      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
+        fromSecret: true
+      - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
+        fromSecret: true
+      - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
+        value: SASL_SSL
+      - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
+        value: SCRAM-SHA-256
+      # Aiven SSL Truststore Configuration
+      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
+        value: /app/truststore.jks
+      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
+        value: changeit
+      - key: SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_INFO_HEADERS
+        value: "false"
+      # Point Frontend to Backend URL
+      - key: REACT_APP_API_URL # Change this key to whatever your frontend uses to call backend
+        fromService:
+          type: web
+          name: product-server
+          property: url
