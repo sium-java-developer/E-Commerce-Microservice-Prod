@@ -3,22 +3,9 @@ databases:
     plan: free
     ipAllowList: [] # Allows internal access from all your Render services
 
-services:
-  # Backend Service
-  - type: web
-    name: product-server
-    plan: free
-    env: docker
-    dockerfilePath: ./server.Dockerfile
-    dockerContext: .
-    #healthCheckPath: /actuator/health # Assuming you have actuator, otherwise remove
+envVarGroups:
+  - name: kafka-aiven-config
     envVars:
-      # Database Connection
-      - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: product-db
-          property: connectionString
-      # Kafka Configuration
       - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
         fromSecret: true
       - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
@@ -32,6 +19,23 @@ services:
         value: /app/truststore.jks
       - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
         value: changeit
+
+services:
+  # Backend Service
+  - type: web
+    name: product-server
+    plan: free
+    env: docker
+    dockerfilePath: ./server.Dockerfile
+    dockerContext: .
+    #healthCheckPath: /actuator/health # Assuming you have actuator, otherwise remove
+    envVars:
+      - fromGroup: kafka-aiven-config # Inherit all shared Kafka variables
+      # Database Connection
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: product-db
+          property: connectionString
       # CRITICAL FIXES for Serialization/Deserialization
       - key: SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER
         value: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
@@ -52,25 +56,9 @@ services:
     dockerfilePath: ./web.Dockerfile
     dockerContext: .
     envVars:
-      # Kafka Configuration
-      - key: SPRING_KAFKA_BOOTSTRAP_SERVERS
-        fromSecret: true
-      - key: SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG
-        fromSecret: true
-      - key: SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL
-        value: SASL_SSL
-      - key: SPRING_KAFKA_PROPERTIES_SASL_MECHANISM
-        value: SCRAM-SHA-256
-      # Aiven SSL Truststore Configuration
-      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_LOCATION
-        value: /app/truststore.jks
-      - key: SPRING_KAFKA_PROPERTIES_SSL_TRUSTSTORE_PASSWORD
-        value: changeit
+      - fromGroup: kafka-aiven-config # Inherit all shared Kafka variables
       - key: SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_INFO_HEADERS
         value: "false"
       # Point Frontend to Backend URL
       - key: REACT_APP_API_URL # Change this key to whatever your frontend uses to call backend
-        fromService:
-          type: web
-          name: product-server
-          property: url
+        value: https://product-server.onrender.com
