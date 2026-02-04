@@ -4,7 +4,7 @@ server:
   port: 8081
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
+    url: ${SPRING_DATASOURCE_URL:#{ '${DATABASE_URL}'.replace('postgres://', 'jdbc:postgresql://') }}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   autoconfigure:
