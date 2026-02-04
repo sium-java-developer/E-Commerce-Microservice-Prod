@@ -52,11 +52,9 @@ services:
       - "postgres-v14"
       - "kafka-v14"
     environment:
-      - DB_HOST=postgres-v14
-      - DB_PORT=5432
-      - POSTGRES_DB=productdb
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-v14:5432/productdb
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-v14:9092
       - SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER=org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       - SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_DESERIALIZER_VALUE_DELEGATE_CLASS=org.springframework.kafka.support.serializer.JsonDeserializer

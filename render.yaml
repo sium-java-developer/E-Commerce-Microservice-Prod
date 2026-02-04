@@ -20,6 +20,14 @@ services:
         fromDatabase:
           name: product-db
           property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: product-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: product-db
+          property: password
       # CRITICAL FIXES for Serialization/Deserialization
       - key: SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER
         value: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer

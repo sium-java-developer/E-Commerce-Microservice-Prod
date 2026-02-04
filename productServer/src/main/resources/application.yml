@@ -4,9 +4,9 @@ server:
   port: 8081
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST}:${DB_PORT}/${POSTGRES_DB}}
-    username: ${POSTGRES_USER:user}
-    password: ${POSTGRES_PASSWORD:password}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   kafka:
