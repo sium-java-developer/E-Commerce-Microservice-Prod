@@ -13,8 +13,8 @@ FROM eclipse-temurin:17-jdk-alpine
 COPY --from=build ./target/*.jar app.jar
 
 # Aiven SSL Configuration
-COPY ./ca.pem /app/ca.pem # This is still needed for Kafka
-RUN keytool -import -file /app/ca.pem -alias aiven -keystore /app/truststore.jks -storepass changeit -noprompt # This is still needed for Kafka
+COPY ./ca.pem /app/ca.pem
+RUN keytool -import -file /app/ca.pem -alias aiven -keystore /app/truststore.jks -storepass changeit -noprompt
 
 COPY ./entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
