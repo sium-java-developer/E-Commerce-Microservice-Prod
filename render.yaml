@@ -16,26 +16,10 @@ services:
       # Inherit all Kafka variables from the UI Environment Group
       - fromGroup: aiven-kafka-prod
       # Database Connection
-      - key: DB_HOST
+      - key: DATABASE_URL
         fromDatabase:
           name: product-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: product-db
-          property: port
-      - key: POSTGRES_DB
-        fromDatabase:
-          name: product-db
-          property: database
-      - key: POSTGRES_USER
-        fromDatabase:
-          name: product-db
-          property: user
-      - key: POSTGRES_PASSWORD
-        fromDatabase:
-          name: product-db
-          property: password
+          property: connectionString
       # CRITICAL FIXES for Serialization/Deserialization
       - key: SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER
         value: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
