@@ -52,7 +52,8 @@ services:
       - "postgres-v14"
       - "kafka-v14"
     environment:
-      - DB_SERVER=postgres-v14:5432
+      - DB_HOST=postgres-v14
+      - DB_PORT=5432
       - POSTGRES_DB=productdb
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
