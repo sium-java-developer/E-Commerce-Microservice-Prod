@@ -16,5 +16,8 @@ COPY --from=build ./target/*.jar app.jar
 COPY ./ca.pem /app/ca.pem
 RUN keytool -import -file /app/ca.pem -alias aiven -keystore /app/truststore.jks -storepass changeit -noprompt
 
+COPY ./entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 EXPOSE 8081
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]
