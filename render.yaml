@@ -16,10 +16,8 @@ services:
       # Inherit all Kafka variables from the UI Environment Group
       - fromGroup: aiven-kafka-prod
       # Database Connection
-      - key: DATABASE_URL
-        fromDatabase:
-          name: product-db
-          property: connectionString
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://${product-db.host}:${product-db.port}/${product-db.database}
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: product-db
