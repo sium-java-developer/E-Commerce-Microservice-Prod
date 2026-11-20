@@ -39,35 +39,3 @@ You can run the entire stack locally using Docker Compose.
     *   **Frontend:** http://localhost:8099
     *   **Backend API:** http://localhost:8098
 
-## Production Deployment (Render + Aiven)
-
-This project is configured for deployment on Render using `render.yaml` as Infrastructure as Code (IaC).
-
-### Services Configuration
-
-*   **Database**: Managed PostgreSQL on Render (Free Tier).
-*   **Kafka**: Aiven for Kafka (Startup/Free Tier).
-*   **Backend & Frontend**: Render Web Services (Docker runtime).
-
-### Deployment Steps
-
-1.  **Aiven Setup**:
-    *   Create a Kafka service on Aiven.
-    *   Download the `ca.pem` certificate and place it in the root of this project (`project/product/ca.pem`).
-    *   Note your Service URI, Username (`avnadmin`), and Password.
-
-2.  **Render Setup**:
-    *   Create a new **Blueprint** on Render and connect this repository.
-    *   Render will detect `render.yaml`.
-
-3.  **Environment Variables (Secrets)**:
-    You will be prompted to provide the following secrets during Blueprint creation:
-    *   `SPRING_KAFKA_BOOTSTRAP_SERVERS`: Your Aiven Service URI (e.g., `kafka-xyz.aivencloud.com:21248`).
-    *   `SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG`:
-        ```
-        org.apache.kafka.common.security.scram.ScramLoginModule required username="avnadmin" password="YOUR_AIVEN_PASSWORD";
-        ```
-
-### SSL Configuration
-
-The project uses a custom `ca.pem` for connecting to Aiven's Kafka. The `Dockerfile`s include steps to import this certificate into the container's Java Truststore.
